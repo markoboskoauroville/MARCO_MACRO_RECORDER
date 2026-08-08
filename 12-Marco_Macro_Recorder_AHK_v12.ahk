@@ -2,9 +2,23 @@
 #SingleInstance Force
 
 ; ============================================================
-;  Marco Macro Recorder AHK version 11
+;  Marco Macro Recorder AHK version 12
 ;  Rebuilt from zero in v6.
 ; ============================================================
+;  New in v12, all of it cosmetic
+;   * The teaching line no longer says anything twice. It used to read
+;     "LButton at -1614, 636 | Click(-1614, 636)". Now it reads
+;     "LButton | Click(-1614, 636)". The code already carries the numbers.
+;   * The idle line is short: "IDLE | Ctrl+.". The dot is on the screen
+;     rather than described in words.
+;   * The menu is grouped under small headings, MODE, EDIT, MOUSE, TEST,
+;     FILE, so it reads as sections instead of a wall of buttons.
+;   * Every button's text is left aligned, so all the symbols line up in
+;     one column down the left edge instead of drifting with the text.
+;   * Nothing overflows its button any more. The frozen pointer position
+;     appears once, in the MOUSE heading, instead of on all four buttons,
+;     and the AutoHotkey exe being used has a line of its own.
+;
 ;  New in v11
 ;   * SYNTAX BUG FIXED, the one that produced macro files that would not
 ;     run. Pressing the double quote key wrote Send(""") and pressing the
@@ -59,7 +73,7 @@ InstallKeybdHook(true, true)
 InstallMouseHook(true, true)
 
 global APP_NAME    := "Marco Macro Recorder"
-global APP_VERSION := "v11 (a)"
+global APP_VERSION := "v12 (a)"
 global BACK_COLOR  := "0C0C0C"
 global MACRO_FILE  := A_ScriptDir "\CapturedMacro.ahk"
 global INI_FILE    := A_ScriptDir "\MarcoRecorder.ini"
@@ -134,7 +148,7 @@ statusGui.BackColor := BACK_COLOR
 ; the teaching line: what you pressed | the AutoHotkey that was written
 statusGui.SetFont("s18 Bold cWhite", "Consolas")
 global subtitleText := statusGui.AddText("x0 y0 w" winW " h" subH " Center"
-    , "IDLE   |   press Ctrl and the full stop for actions")
+    , "IDLE   |   Ctrl+.")
 
 statusGui.SetFont("s9 Bold cGray", "Consolas")
 global modeText := statusGui.AddText("x10 y" (subH + gapY) " w100 h16", "IDLE")
@@ -317,7 +331,8 @@ OnMouseButton(hk, *) {
         default:         cmd := 'Click(' mx ', ' my ', "X2")'
     }
     btnText.Text := "btn: " clean
-    Record(cmd, clean " at " mx ", " my)
+    ; the label does not repeat the coordinates, the code beside it has them
+    Record(cmd, clean)
 }
 
 MouseOverOwnGui() {
@@ -553,7 +568,7 @@ UpdateMode() {
     } else {
         modeText.SetFont("cGray")
         modeText.Text := "IDLE"
-        hintText.Text := "Ctrl+. for actions"
+        hintText.Text := "Ctrl+. menu"
         A_IconTip := APP_NAME " " APP_VERSION "`nIDLE. Ctrl and full stop opens the menu."
     }
     try modeText.Redraw()
@@ -567,7 +582,7 @@ EnterIdleMode(g := 0) {
     UnloadMacro()
     g_Mode := "IDLE"
     UpdateMode()
-    Flash("IDLE   |   press Ctrl and the full stop for actions")
+    Flash("IDLE   |   Ctrl+.")
 }
 
 EnterRecordMode(g := 0) {
@@ -829,63 +844,90 @@ CloseOwn(g) {
 OpenMenu(*) {
     global g_MenuX, g_MenuY
     MouseGetPos(&g_MenuX, &g_MenuY)
-    at := " at " g_MenuX ", " g_MenuY
 
+    W := 330                                  ; one width for every button
     g := Gui("+AlwaysOnTop +ToolWindow", APP_NAME " " APP_VERSION)
     g_OwnHwnds[g.Hwnd] := true
-    g.SetFont("s10", "Segoe UI")
-    g.AddText("xm", g_Mode = "TEST"
-        ? "TEST mode.  " g_TestLabel " runs the macro.  Nothing is being recorded."
+
+    ; ---- header, three short lines, none of which can overflow ----
+    g.SetFont("s10 Bold", "Segoe UI")
+    g.AddText("xm w" W, g_Mode = "TEST"
+        ? "TEST mode"
         : g_Mode = "REC"
-            ? "RECORD mode.  Everything you do is being recorded."
-            : "IDLE.  Nothing is being recorded and nothing is loaded.")
-    g.AddText("xm y+4", "Steps in CapturedMacro.ahk: " CountCommands()
-                  . "     redo waiting: " g_Redo.Length
-                  . "     testing with: " AhkExeName())
+            ? "RECORD mode"
+            : "IDLE")
+    g.SetFont("s9 Norm")
+    g.AddText("xm y+2 w" W, g_Mode = "TEST"
+        ? g_TestLabel " runs the macro. Nothing is recorded."
+        : g_Mode = "REC"
+            ? "Everything you do is being recorded."
+            : "Nothing is recorded and nothing is loaded.")
+    g.AddText("xm y+2 w" W, "Steps: " CountCommands() "     Redo waiting: " g_Redo.Length)
+    g.AddText("xm y+2 w" W, "Testing with: " AhkExeName())
 
-    g.SetFont("s10 Bold")
-    if (g_Mode = "REC") {
-        g.AddButton("xm y+12 w340", Chr(0x23F9) "  Stop recording, back to idle").OnEvent("Click", (*) => EnterIdleMode(g))
-    } else if (g_Mode = "TEST") {
-        g.AddButton("xm y+12 w340", Chr(0x23CF) "  Close the test macro and unload it").OnEvent("Click", (*) => CloseTest(g))
-    } else {
-        g.AddButton("xm y+12 w340", Chr(0x1F534) "  Start recording").OnEvent("Click", (*) => EnterRecordMode(g))
-    }
+    ; ---- MODE ----
+    Section(g, W, "MODE")
+    if (g_Mode = "REC")
+        Btn(g, W, Chr(0x23F9), "Stop recording, back to idle", (*) => EnterIdleMode(g), true)
+    else if (g_Mode = "TEST")
+        Btn(g, W, Chr(0x23CF), "Close the test macro and unload it", (*) => CloseTest(g), true)
+    else
+        Btn(g, W, Chr(0x1F534), "Start recording", (*) => EnterRecordMode(g), true)
 
-    g.SetFont("s10 Norm")
+    ; ---- EDIT ----
     if (g_Mode != "TEST") {
-        g.AddButton("xm y+10 w340", Chr(0x21A9) "  Undo last action").OnEvent("Click", (*) => UndoLast(g))
-        g.AddButton("xm y+6 w340", Chr(0x21AA) "  Redo last undone action").OnEvent("Click", (*) => RedoLast(g))
+        Section(g, W, "EDIT")
+        Btn(g, W, Chr(0x21A9), "Undo last action", (*) => UndoLast(g))
+        Btn(g, W, Chr(0x21AA), "Redo last undone action", (*) => RedoLast(g))
     }
 
+    ; ---- MOUSE. The position is stated once, in the heading. ----
     if (g_Mode = "REC") {
-        g.AddText("xm y+12", "Pointer is frozen at X " g_MenuX "   Y " g_MenuY)
-        g.AddButton("xm y+6 w340", Chr(0x1F3AF) "  Record mouse position only" at).OnEvent("Click"
-            , (*) => TakeMouse(g, "MouseMove(" g_MenuX ", " g_MenuY ")", "move to " g_MenuX ", " g_MenuY))
-        g.AddButton("xm y+6 w340", Chr(0x1F5B1) "  Record LEFT click" at).OnEvent("Click"
-            , (*) => TakeMouse(g, "Click(" g_MenuX ", " g_MenuY ")", "left click at " g_MenuX ", " g_MenuY))
-        g.AddButton("xm y+6 w340", Chr(0x1F5B1) "  Record RIGHT click" at).OnEvent("Click"
-            , (*) => TakeMouse(g, 'Click(' g_MenuX ', ' g_MenuY ', "Right")', "right click at " g_MenuX ", " g_MenuY))
-        g.AddButton("xm y+6 w340", Chr(0x1F5B1) "  Record DOUBLE click" at).OnEvent("Click"
-            , (*) => TakeMouse(g, 'Click(' g_MenuX ', ' g_MenuY ', 2)', "double click at " g_MenuX ", " g_MenuY))
+        Section(g, W, "MOUSE, pointer frozen at X " g_MenuX "  Y " g_MenuY)
+        Btn(g, W, Chr(0x1F3AF), "Position only", (*) =>
+            TakeMouse(g, "MouseMove(" g_MenuX ", " g_MenuY ")", "mouse position"))
+        Btn(g, W, Chr(0x1F5B1), "Left click", (*) =>
+            TakeMouse(g, "Click(" g_MenuX ", " g_MenuY ")", "left click"))
+        Btn(g, W, Chr(0x1F5B1), "Right click", (*) =>
+            TakeMouse(g, 'Click(' g_MenuX ', ' g_MenuY ', "Right")', "right click"))
+        Btn(g, W, Chr(0x1F5B1), "Double click", (*) =>
+            TakeMouse(g, 'Click(' g_MenuX ', ' g_MenuY ', 2)', "double click"))
     }
 
+    ; ---- TEST ----
+    Section(g, W, "TEST")
     if (g_Mode = "TEST") {
-        g.AddButton("xm y+10 w340", Chr(0x1F504) "  Reload the macro under " g_TestLabel).OnEvent("Click", (*) => StartTest(g))
-        g.AddButton("xm y+6 w340", Chr(0x2699) "  Choose a different testing shortcut").OnEvent("Click", (*) => AskTestShortcut(g))
-        g.AddButton("xm y+6 w340", Chr(0x1F534) "  Back to recording").OnEvent("Click", (*) => EnterRecordMode(g))
+        Btn(g, W, Chr(0x1F504), "Reload under " g_TestLabel, (*) => StartTest(g))
+        Btn(g, W, Chr(0x2699),  "Choose another shortcut", (*) => AskTestShortcut(g))
+        Btn(g, W, Chr(0x1F534), "Back to recording", (*) => EnterRecordMode(g))
     } else {
-        g.AddButton("xm y+12 w340", Chr(0x25B6) "  Testing mode, choose a shortcut").OnEvent("Click", (*) => AskTestShortcut(g))
-        g.AddButton("xm y+6 w340", Chr(0x25B6) "  Testing mode with " g_TestLabel).OnEvent("Click", (*) => StartTest(g))
+        Btn(g, W, Chr(0x25B6), "Choose a shortcut and test", (*) => AskTestShortcut(g))
+        Btn(g, W, Chr(0x25B6), "Test with " g_TestLabel, (*) => StartTest(g))
     }
 
-    g.AddButton("xm y+12 w340", Chr(0x1F4E6) "  Archive macro with a timestamp").OnEvent("Click", (*) => Archive(g))
-    g.AddButton("xm y+6 w340", Chr(0x1F4C2) "  Open the macro folder").OnEvent("Click", (*) => (CloseOwn(g), Run(A_ScriptDir)))
-    g.AddButton("xm y+6 w340", Chr(0x1F4DD) "  Open CapturedMacro.ahk in your editor").OnEvent("Click", (*) => EditMacro(g))
-    g.AddButton("xm y+6 w340", Chr(0x274C) "  Exit the recorder").OnEvent("Click", (*) => ExitApp())
+    ; ---- FILE ----
+    Section(g, W, "FILE")
+    Btn(g, W, Chr(0x1F4E6), "Archive with a timestamp", (*) => Archive(g))
+    Btn(g, W, Chr(0x1F4C2), "Open the macro folder", (*) => (CloseOwn(g), Run(A_ScriptDir)))
+    Btn(g, W, Chr(0x1F4DD), "Edit CapturedMacro.ahk", (*) => EditMacro(g))
+    Btn(g, W, Chr(0x274C),  "Exit the recorder", (*) => ExitApp())
+
     g.OnEvent("Close", (*) => CloseOwn(g))
     g.OnEvent("Escape", (*) => CloseOwn(g))
     ShowLeft(g)
+}
+
+; A small dim heading, so the menu reads as sections rather than a wall.
+Section(g, W, title) {
+    g.SetFont("s8 Bold c707070", "Segoe UI")
+    g.AddText("xm y+12 w" W, title)
+}
+
+; Every button is built the same way, text aligned Left, so all the symbols
+; line up in one column down the left edge instead of drifting with the text.
+Btn(g, W, symbol, text, handler, bold := false) {
+    g.SetFont("s10 " (bold ? "Bold" : "Norm"), "Segoe UI")
+    g.AddButton("xm y+4 w" W " h30 Left", "  " symbol "   " text).OnEvent("Click", handler)
 }
 
 CloseTest(g) {

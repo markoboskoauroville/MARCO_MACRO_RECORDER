@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v12
+Cosmetic only.
+The teaching line no longer says anything twice. A click used to read `LButton at -1614, 636 | Click(-1614, 636)` and now reads `LButton | Click(-1614, 636)`, since the code already carries the numbers.
+The idle line is short: `IDLE | Ctrl+.`. The dot is on the screen rather than described in words.
+The menu is grouped under small dim headings, MODE, EDIT, MOUSE, TEST, FILE, so it reads as sections instead of a wall of buttons.
+Every button is built by one helper with its text aligned Left, so the symbols line up in a single column down the left edge instead of drifting with the length of each label.
+Nothing overflows a button any more. The frozen pointer position is stated once in the MOUSE heading instead of repeated on four buttons, and the AutoHotkey exe in use has a line of its own in the header. Longest label is 34 characters against a 330 pixel button.
+
 ## v11
 Fixed the bug that produced macro files which would not run. Pressing the quote key or the backtick key wrote them into the file unescaped, which left a string open, so AutoHotkey ran past the end of that line and reported a confusing error about an unexpected brace further down. Every string written into the macro file now goes through an escaping function that doubles quotes and escapes backticks.
 No comments are written into the generated macro any more. The teaching line still shows the exact code, it just lives on screen rather than in the file, which also removes the alignment padding that made lines long and fragile.

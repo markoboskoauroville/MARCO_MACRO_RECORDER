@@ -15,17 +15,19 @@ The recorded file is the only source of truth. Nothing is held in memory. You ca
 And it teaches. The big line in the status strip shows what you pressed, a pipe, and the exact AutoHotkey that was written:
 
 ```
-Escape                 |  Send("{Escape}")
-Ctrl+Shift+S           |  Send("^+s")
-XButton1 at 2456, 812  |  Click(2456, 812, "X1")
+Escape        |  Send("{Escape}")
+Ctrl+Shift+S  |  Send("^+s")
+XButton1      |  Click(2456, 812, "X1")
 ```
+
+Nothing is said twice. The label names what you pressed, the code carries the numbers.
 
 The same human label goes into the macro file as a trailing comment, so the file reads like a lesson rather than a wall of `Send`.
 
 ## Getting started
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/).
-2. Download `11-Marco_Macro_Recorder_AHK_v11.ahk` and put it in a folder of its own. If you drop a copy of `AutoHotkey64.exe` in beside it, that build is used to run your macros.
+2. Download `12-Marco_Macro_Recorder_AHK_v12.ahk` and put it in a folder of its own. If you drop a copy of `AutoHotkey64.exe` in beside it, that build is used to run your macros.
 3. Double click it.
 4. A status strip appears at the bottom of your left monitor, saying IDLE.
 5. Press `Ctrl` and `.` together to open the menu, then click the red Start recording button.
