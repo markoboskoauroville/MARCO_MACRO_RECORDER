@@ -25,9 +25,10 @@ The same human label goes into the macro file as a trailing comment, so the file
 ## Getting started
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/).
-2. Download `10-Marco_Macro_Recorder_AHK_v10.ahk` and double click it.
-3. A status strip appears at the bottom of your left monitor. You are recording.
-4. Press `Ctrl` and `.` together to open the menu.
+2. Download `11-Marco_Macro_Recorder_AHK_v11.ahk` and put it in a folder of its own. If you drop a copy of `AutoHotkey64.exe` in beside it, that build is used to run your macros.
+3. Double click it.
+4. A status strip appears at the bottom of your left monitor, saying IDLE.
+5. Press `Ctrl` and `.` together to open the menu, then click the red Start recording button.
 
 ## Keys
 
@@ -37,7 +38,9 @@ The same human label goes into the macro file as a trailing comment, so the file
 | your own shortcut | Runs the macro, in TEST mode only |
 | everything else | Recorded, in RECORD mode |
 
-## Two modes
+## Three modes
+
+It starts in **IDLE**, which does nothing at all. Nothing is captured, nothing is loaded, and the strip simply tells you to press `Ctrl` and `.` for actions. You are never recording by surprise.
 
 **RECORD mode** records everything, always. **TEST mode** records nothing and runs what you built.
 
@@ -69,7 +72,11 @@ Beside the script: `CapturedMacro.ahk`, the macro itself. `MarcoRecorder.ini`, y
 
 ## Troubleshooting
 
-**An AutoHotkey error box appears saying "Item has no value".** You are on v9 or earlier. Download v10.
+**An AutoHotkey error box appears saying "Item has no value".** You are on v9 or earlier. Download the newest version.
+
+**The recorded macro will not run, and the error mentions an unexpected brace.** You are on v10 or earlier, and you pressed the quote key or the backtick key while recording. Those went into the file without being escaped, which left a string open. Fixed in v11. Delete the broken `CapturedMacro.ahk` and record again.
+
+**The test macro stays in the tray after I stop testing.** Fixed in v11, which asks it to exit politely, kills it if it refuses, and sweeps up any stray copy. There is also a Close the test macro button in the menu.
 
 **Nothing records.** Check the status strip says `● REC` and not `▶ TEST`. TEST mode records nothing by design.
 
