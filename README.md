@@ -25,7 +25,7 @@ The same human label goes into the macro file as a trailing comment, so the file
 ## Getting started
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/).
-2. Download `9-Marco_Macro_Recorder_AHK_v9.ahk` and double click it.
+2. Download `10-Marco_Macro_Recorder_AHK_v10.ahk` and double click it.
 3. A status strip appears at the bottom of your left monitor. You are recording.
 4. Press `Ctrl` and `.` together to open the menu.
 
@@ -66,6 +66,14 @@ Auto-repeat is ignored, so a held key records once and must be released before i
 ## Where things live
 
 Beside the script: `CapturedMacro.ahk`, the macro itself. `MarcoRecorder.ini`, your testing shortcut. `CapturedMacro_<timestamp>.ahk`, anything you archived.
+
+## Troubleshooting
+
+**An AutoHotkey error box appears saying "Item has no value".** You are on v9 or earlier. Download v10.
+
+**Nothing records.** Check the status strip says `● REC` and not `▶ TEST`. TEST mode records nothing by design.
+
+**A key does nothing when you press it.** The six menu bindings and your chosen testing shortcut are never recorded, which is deliberate.
 
 ## Licence
 

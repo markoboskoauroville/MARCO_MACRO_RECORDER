@@ -2,9 +2,20 @@
 #SingleInstance Force
 
 ; ============================================================
-;  Marco Macro Recorder AHK version 9
+;  Marco Macro Recorder AHK version 10
 ;  Rebuilt from zero in v6.
 ; ============================================================
+;  New in v10
+;   * CRASH FIXED. Letting go of Ctrl, Shift, Alt or Win threw
+;     "Item has no value" and put an error box on the screen. Map.Delete
+;     throws when the key is not in the map, and modifier keys are
+;     deliberately never put into the held-key map, so every modifier you
+;     released raised it. The same trap in the window bookkeeping is
+;     guarded too.
+;   * Writes are atomic. The file is written under a temporary name and
+;     then moved over the real one, so an interrupted write can never
+;     leave you with half a macro file.
+;
 ;  New in v9
 ;   * TWO MODES, and nothing else. RECORD mode records everything, always.
 ;     TEST mode records nothing and lets you run what you built. Pause is
@@ -71,7 +82,7 @@ InstallKeybdHook(true, true)
 InstallMouseHook(true, true)
 
 global APP_NAME    := "Marco Macro Recorder"
-global APP_VERSION := "v9 (a)"
+global APP_VERSION := "v10 (a)"
 global BACK_COLOR  := "0C0C0C"
 global MACRO_FILE  := A_ScriptDir "\CapturedMacro.ahk"
 global INI_FILE    := A_ScriptDir "\MarcoRecorder.ini"
@@ -239,7 +250,12 @@ OwnWindowActive() {
 }
 
 OnKeyUp(ih, vk, sc) {
-    g_Held.Delete(vk "-" sc)
+    ; Map.Delete throws when the key is not there, and it very often is not:
+    ; modifier keys are deliberately never added to g_Held, and any key already
+    ; held down when the script started sends an up without ever sending a down.
+    id := vk "-" sc
+    if g_Held.Has(id)
+        g_Held.Delete(id)
 }
 
 OnKeyDown(ih, vk, sc) {
@@ -406,13 +422,18 @@ AppendToMacro(cmd, label := "") {
     return WriteMacro(out)
 }
 
+; Write to a temporary name first, then move it over the real file. A crash
+; or a full disk halfway through can never leave you with half a macro.
 WriteMacro(text) {
+    tmp := MACRO_FILE ".tmp"
     try {
-        if FileExist(MACRO_FILE)
-            FileDelete(MACRO_FILE)
-        FileAppend(text, MACRO_FILE, "UTF-8")
+        if FileExist(tmp)
+            FileDelete(tmp)
+        FileAppend(text, tmp, "UTF-8")
+        FileMove(tmp, MACRO_FILE, true)
         return true
     } catch as e {
+        try FileDelete(tmp)
         Flash("write failed " e.Message)
         return false
     }
@@ -694,8 +715,13 @@ ShowLeft(g) {
 }
 
 CloseOwn(g) {
-    g_OwnHwnds.Delete(g.Hwnd)
-    g.Destroy()
+    ; the same trap one floor down: closing a window twice must not throw
+    try {
+        h := g.Hwnd
+        if g_OwnHwnds.Has(h)
+            g_OwnHwnds.Delete(h)
+    }
+    try g.Destroy()
 }
 
 ; ============================================================
