@@ -2,9 +2,17 @@
 #SingleInstance Force
 
 ; ============================================================
-;  Marco Macro Recorder AHK version 12
+;  Marco Macro Recorder AHK version 13
 ;  Rebuilt from zero in v6.
 ; ============================================================
+;  New in v13
+;   * Fixed a name collision that stopped v12 from starting at all. The
+;     menu helper introduced in v12 was called Btn, and the loop that
+;     registers the mouse buttons used a variable called btn. AutoHotkey
+;     does not distinguish case, so the loop was trying to assign to a
+;     function. The helpers are now MenuBtn and MenuSection, and the loop
+;     variable is mouseKey.
+;
 ;  New in v12, all of it cosmetic
 ;   * The teaching line no longer says anything twice. It used to read
 ;     "LButton at -1614, 636 | Click(-1614, 636)". Now it reads
@@ -73,7 +81,7 @@ InstallKeybdHook(true, true)
 InstallMouseHook(true, true)
 
 global APP_NAME    := "Marco Macro Recorder"
-global APP_VERSION := "v12 (a)"
+global APP_VERSION := "v13 (a)"
 global BACK_COLOR  := "0C0C0C"
 global MACRO_FILE  := A_ScriptDir "\CapturedMacro.ahk"
 global INI_FILE    := A_ScriptDir "\MarcoRecorder.ini"
@@ -176,8 +184,8 @@ UpdateMode()
 ;  On a Kensington or Razer style mouse the two thumb buttons come
 ;  through as XButton1 and XButton2.
 ; ============================================================
-for btn in ["LButton", "RButton", "MButton", "XButton1", "XButton2"]
-    try Hotkey("~" btn, OnMouseButton, "On")
+for mouseKey in ["LButton", "RButton", "MButton", "XButton1", "XButton2"]
+    try Hotkey("~" mouseKey, OnMouseButton, "On")
 
 ; ============================================================
 ;  Keyboard capture, one hook for the whole keyboard
@@ -866,51 +874,51 @@ OpenMenu(*) {
     g.AddText("xm y+2 w" W, "Testing with: " AhkExeName())
 
     ; ---- MODE ----
-    Section(g, W, "MODE")
+    MenuSection(g, W, "MODE")
     if (g_Mode = "REC")
-        Btn(g, W, Chr(0x23F9), "Stop recording, back to idle", (*) => EnterIdleMode(g), true)
+        MenuBtn(g, W, Chr(0x23F9), "Stop recording, back to idle", (*) => EnterIdleMode(g), true)
     else if (g_Mode = "TEST")
-        Btn(g, W, Chr(0x23CF), "Close the test macro and unload it", (*) => CloseTest(g), true)
+        MenuBtn(g, W, Chr(0x23CF), "Close the test macro and unload it", (*) => CloseTest(g), true)
     else
-        Btn(g, W, Chr(0x1F534), "Start recording", (*) => EnterRecordMode(g), true)
+        MenuBtn(g, W, Chr(0x1F534), "Start recording", (*) => EnterRecordMode(g), true)
 
     ; ---- EDIT ----
     if (g_Mode != "TEST") {
-        Section(g, W, "EDIT")
-        Btn(g, W, Chr(0x21A9), "Undo last action", (*) => UndoLast(g))
-        Btn(g, W, Chr(0x21AA), "Redo last undone action", (*) => RedoLast(g))
+        MenuSection(g, W, "EDIT")
+        MenuBtn(g, W, Chr(0x21A9), "Undo last action", (*) => UndoLast(g))
+        MenuBtn(g, W, Chr(0x21AA), "Redo last undone action", (*) => RedoLast(g))
     }
 
     ; ---- MOUSE. The position is stated once, in the heading. ----
     if (g_Mode = "REC") {
-        Section(g, W, "MOUSE, pointer frozen at X " g_MenuX "  Y " g_MenuY)
-        Btn(g, W, Chr(0x1F3AF), "Position only", (*) =>
+        MenuSection(g, W, "MOUSE, pointer frozen at X " g_MenuX "  Y " g_MenuY)
+        MenuBtn(g, W, Chr(0x1F3AF), "Position only", (*) =>
             TakeMouse(g, "MouseMove(" g_MenuX ", " g_MenuY ")", "mouse position"))
-        Btn(g, W, Chr(0x1F5B1), "Left click", (*) =>
+        MenuBtn(g, W, Chr(0x1F5B1), "Left click", (*) =>
             TakeMouse(g, "Click(" g_MenuX ", " g_MenuY ")", "left click"))
-        Btn(g, W, Chr(0x1F5B1), "Right click", (*) =>
+        MenuBtn(g, W, Chr(0x1F5B1), "Right click", (*) =>
             TakeMouse(g, 'Click(' g_MenuX ', ' g_MenuY ', "Right")', "right click"))
-        Btn(g, W, Chr(0x1F5B1), "Double click", (*) =>
+        MenuBtn(g, W, Chr(0x1F5B1), "Double click", (*) =>
             TakeMouse(g, 'Click(' g_MenuX ', ' g_MenuY ', 2)', "double click"))
     }
 
     ; ---- TEST ----
-    Section(g, W, "TEST")
+    MenuSection(g, W, "TEST")
     if (g_Mode = "TEST") {
-        Btn(g, W, Chr(0x1F504), "Reload under " g_TestLabel, (*) => StartTest(g))
-        Btn(g, W, Chr(0x2699),  "Choose another shortcut", (*) => AskTestShortcut(g))
-        Btn(g, W, Chr(0x1F534), "Back to recording", (*) => EnterRecordMode(g))
+        MenuBtn(g, W, Chr(0x1F504), "Reload under " g_TestLabel, (*) => StartTest(g))
+        MenuBtn(g, W, Chr(0x2699),  "Choose another shortcut", (*) => AskTestShortcut(g))
+        MenuBtn(g, W, Chr(0x1F534), "Back to recording", (*) => EnterRecordMode(g))
     } else {
-        Btn(g, W, Chr(0x25B6), "Choose a shortcut and test", (*) => AskTestShortcut(g))
-        Btn(g, W, Chr(0x25B6), "Test with " g_TestLabel, (*) => StartTest(g))
+        MenuBtn(g, W, Chr(0x25B6), "Choose a shortcut and test", (*) => AskTestShortcut(g))
+        MenuBtn(g, W, Chr(0x25B6), "Test with " g_TestLabel, (*) => StartTest(g))
     }
 
     ; ---- FILE ----
-    Section(g, W, "FILE")
-    Btn(g, W, Chr(0x1F4E6), "Archive with a timestamp", (*) => Archive(g))
-    Btn(g, W, Chr(0x1F4C2), "Open the macro folder", (*) => (CloseOwn(g), Run(A_ScriptDir)))
-    Btn(g, W, Chr(0x1F4DD), "Edit CapturedMacro.ahk", (*) => EditMacro(g))
-    Btn(g, W, Chr(0x274C),  "Exit the recorder", (*) => ExitApp())
+    MenuSection(g, W, "FILE")
+    MenuBtn(g, W, Chr(0x1F4E6), "Archive with a timestamp", (*) => Archive(g))
+    MenuBtn(g, W, Chr(0x1F4C2), "Open the macro folder", (*) => (CloseOwn(g), Run(A_ScriptDir)))
+    MenuBtn(g, W, Chr(0x1F4DD), "Edit CapturedMacro.ahk", (*) => EditMacro(g))
+    MenuBtn(g, W, Chr(0x274C),  "Exit the recorder", (*) => ExitApp())
 
     g.OnEvent("Close", (*) => CloseOwn(g))
     g.OnEvent("Escape", (*) => CloseOwn(g))
@@ -918,14 +926,14 @@ OpenMenu(*) {
 }
 
 ; A small dim heading, so the menu reads as sections rather than a wall.
-Section(g, W, title) {
+MenuSection(g, W, title) {
     g.SetFont("s8 Bold c707070", "Segoe UI")
     g.AddText("xm y+12 w" W, title)
 }
 
 ; Every button is built the same way, text aligned Left, so all the symbols
 ; line up in one column down the left edge instead of drifting with the text.
-Btn(g, W, symbol, text, handler, bold := false) {
+MenuBtn(g, W, symbol, text, handler, bold := false) {
     g.SetFont("s10 " (bold ? "Bold" : "Norm"), "Segoe UI")
     g.AddButton("xm y+4 w" W " h30 Left", "  " symbol "   " text).OnEvent("Click", handler)
 }

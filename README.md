@@ -27,7 +27,7 @@ The same human label goes into the macro file as a trailing comment, so the file
 ## Getting started
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/).
-2. Download `12-Marco_Macro_Recorder_AHK_v12.ahk` and put it in a folder of its own. If you drop a copy of `AutoHotkey64.exe` in beside it, that build is used to run your macros.
+2. Download `13-Marco_Macro_Recorder_AHK_v13.ahk` and put it in a folder of its own. If you drop a copy of `AutoHotkey64.exe` in beside it, that build is used to run your macros.
 3. Double click it.
 4. A status strip appears at the bottom of your left monitor, saying IDLE.
 5. Press `Ctrl` and `.` together to open the menu, then click the red Start recording button.

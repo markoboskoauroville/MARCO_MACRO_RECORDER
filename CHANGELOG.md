@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v13
+Fixed a name collision that stopped v12 starting at all. The menu helper added in v12 was called `Btn`, and the loop that registers the mouse buttons used a variable called `btn`. AutoHotkey does not distinguish case, so the loop was trying to assign to a function and threw "This Func cannot be used as an output variable". The helpers are now `MenuBtn` and `MenuSection`, and the loop variable is `mouseKey`.
+Added a name clash audit to the release check: every function name is now compared, case-insensitively, against every name that is assigned to, used as a loop variable, or passed by reference. It reports clean.
+
 ## v12
 Cosmetic only.
 The teaching line no longer says anything twice. A click used to read `LButton at -1614, 636 | Click(-1614, 636)` and now reads `LButton | Click(-1614, 636)`, since the code already carries the numbers.
